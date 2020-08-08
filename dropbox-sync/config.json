@@ -10,7 +10,7 @@
   "hassio_api": true,
   "hassio_role": "manager",
   "boot": "auto",
-  "map": ["backup", "share"],
+  "map": ["backup", "share:rw"],
   "options": {
     "oauth_access_token": "<YOUR_ACCESS_TOKEN>",
     "output": ""
@@ -19,7 +19,8 @@
     "oauth_access_token": "str",
     "output": "str",
     "keep_last": "int(0,)?",
-    "filetypes": "str?"
+    "filetypes": "str?",
+    "rm_uploaded": "bool?"
   },
   "image": "stenhamm/dropbox-sync"
 }

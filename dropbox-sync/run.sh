@@ -6,6 +6,7 @@ TOKEN=$(jq --raw-output ".oauth_access_token" $CONFIG_PATH)
 OUTPUT_DIR=$(jq --raw-output ".output // empty" $CONFIG_PATH)
 KEEP_LAST=$(jq --raw-output ".keep_last // empty" $CONFIG_PATH)
 FILETYPES=$(jq --raw-output ".filetypes // empty" $CONFIG_PATH)
+RM_UPLOADED=$(jq --raw-output ".rm_uploaded // empty" $CONFIG_PATH)
 
 if [[ -z "$OUTPUT_DIR" ]]; then
     OUTPUT_DIR="/"
@@ -33,10 +34,17 @@ while read -r msg; do
         fi
         if [[ "$FILETYPES" ]]; then
             echo "[Info] filetypes option is set, scanning share directory for files with extensions ${FILETYPES}"
-            find /share -regextype posix-extended -regex "^.*\.(${FILETYPES})" -exec ./dropbox_uploader.sh -s -f /etc/uploader.conf upload {} "$OUTPUT_DIR" \;
+
+            if [[ $RM_UPLOADED = "true" ]]; then
+                echo "[Info] rm_uploaded option is set, removing succesfully uploded files from shared folder"
+                find /share -regextype posix-extended -regex "^.*\.(${FILETYPES})" -exec ./dropbox_uploader.sh -s -f /etc/uploader.conf upload {} "$OUTPUT_DIR" \; -exec rm {} \;
+            else
+                find /share -regextype posix-extended -regex "^.*\.(${FILETYPES})" -exec ./dropbox_uploader.sh -s -f /etc/uploader.conf upload {} "$OUTPUT_DIR" \;
+            fi
         fi
     else
         # received undefined command
         echo "[Error] Command not found: ${cmd}"
     fi
+    echo "[Info] Message handling complete"
 done
